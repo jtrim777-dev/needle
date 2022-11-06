@@ -1,0 +1,22 @@
+{
+  "schemaVersion": 1,
+  "id": "needle",
+  "version": "${version}",
+
+  "name": "Needle",
+  "description": "Example description",
+  "authors": [
+    "jtrim777"
+  ],
+  "contact": {
+    "homepage": "???",
+    "sources": "???"
+  },
+  "license": "CC0-1.0",
+  "environment": "*",
+  "mixins": [],
+  "depends": {
+    "fabricloader": ">=0.14.9",
+    "fabric-language-scala": "*"
+  }
+}
