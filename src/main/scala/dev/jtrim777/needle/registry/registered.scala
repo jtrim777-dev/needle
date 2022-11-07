@@ -17,11 +17,11 @@ object registeredO {
 
     val valDef = inputs.head match {
       case field: ValDef => field
-      case _ => throw new IllegalArgumentException("The @registered macro may only be used on lazy value definitions")
+      case _ => c.abort(c.enclosingPosition, "The @registered macro may only be used on lazy value definitions")
     }
 
     if (!valDef.mods.hasFlag(Flag.LAZY) | valDef.mods.hasFlag(Flag.PARAM)) {
-      throw new IllegalArgumentException("The @registered macro may only be used on lazy value definitions")
+      c.abort(c.enclosingPosition, "The @registered macro may only be used on lazy value definitions")
     }
 
     val varName = valDef.name.decodedName.toString
