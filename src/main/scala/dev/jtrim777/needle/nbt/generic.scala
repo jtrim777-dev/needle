@@ -39,6 +39,36 @@ object generic {
     }
   }
 
+  implicit def hlistOOEncoder[K <: Symbol, H, T <: HList](implicit
+                                                        witness: Witness.Aux[K],
+                                                        hEncoder: Lazy[NBTEncoder[H]],
+                                                        tEncoder: NBTEncoder[T]
+                                                       ): NBTEncoder[FieldType[K, Option[H]] :: T] = {
+    val fieldName = witness.value.name
+
+    { (input: FieldType[K, Option[H]] :: T) =>
+      val tail = tEncoder.encode(input.tail).downCast(NbtCompound.TYPE)
+
+      input.head.foreach(h => tail.put(fieldName, hEncoder.value.encode(h)))
+      tail
+    }
+  }
+
+  implicit def hlistOODecoder[K <: Symbol, H, T <: HList](implicit
+                                                        witness: Witness.Aux[K],
+                                                        hDecoder: Lazy[NBTDecoder[H]],
+                                                        tDecoder: NBTDecoder[T]
+                                                       ): NBTDecoder[FieldType[K, Option[H]] :: T] = {
+    val fieldName = witness.value.name
+
+    { (source: NbtElement) =>
+      val cmpd = source.downCast(NbtCompound.TYPE)
+      val head = if (cmpd.contains(fieldName)) Some(hDecoder.value.decode(cmpd.get(fieldName))) else None
+      val tail = tDecoder.decode(source)
+      field[K](head) :: tail
+    }
+  }
+
   implicit def genericEncoder[A, H](implicit generic: LabelledGeneric.Aux[A, H],
                                     hcoder: Lazy[NBTEncoder[H]]): NBTEncoder[A] = { a => hcoder.value.encode(generic.to(a)) }
 

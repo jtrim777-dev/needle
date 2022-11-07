@@ -21,6 +21,10 @@ package object nbt {
     def as[A : NBTDecoder]: A = implicitly[NBTDecoder[A]].decode(element)
   }
 
+  implicit class EncodableOps[A : NBTEncoder](a: A) {
+    def asNBT: NbtElement = implicitly[NBTEncoder[A]].encode(a)
+  }
+
   implicit val ByteCodec: NBTCodec[Byte] = codec({i => NbtByte.of(i)}, { e => e.downCast(NbtByte.TYPE).byteValue()})
   implicit val ShortCodec: NBTCodec[Short] = codec({i => NbtShort.of(i)}, { e => e.downCast(NbtShort.TYPE).shortValue()})
   implicit val IntCodec: NBTCodec[Int] = codec({i => NbtInt.of(i)}, {e => e.downCast(NbtInt.TYPE).intValue()})
@@ -56,4 +60,23 @@ package object nbt {
       nmap.getKeys.asScala.toList.map(s => s -> nmap.get(s).as[V]).toMap
     }
   )
+
+  private case class EitherWrapper[L : NBTEncoder : NBTDecoder, R : NBTEncoder : NBTDecoder](left: Option[L], right: Option[R]) {
+    def unwrap: Either[L, R] = left match {
+      case Some(value) => Left(value)
+      case None => Right(right.get)
+    }
+  }
+  private object EitherWrapper {
+    def wrap[L : NBTEncoder : NBTDecoder, R : NBTEncoder : NBTDecoder](e: Either[L, R]): EitherWrapper[L, R] = e match {
+      case Left(value) => EitherWrapper(Some(value), None)
+      case Right(value) => EitherWrapper(None, Some(value))
+    }
+  }
+
+  implicit def eitherCodec[L : NBTEncoder : NBTDecoder, R : NBTEncoder : NBTDecoder]: NBTCodec[Either[L, R]] = {
+    import generic._
+    codec({a => EitherWrapper.wrap(a).asNBT }, {e => e.as[EitherWrapper[L, R]].unwrap })
+  }
+
 }
