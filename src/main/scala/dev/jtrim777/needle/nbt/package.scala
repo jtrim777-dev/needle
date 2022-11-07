@@ -78,5 +78,4 @@ package object nbt {
     import generic._
     codec({a => EitherWrapper.wrap(a).asNBT }, {e => e.as[EitherWrapper[L, R]].unwrap })
   }
-
 }
