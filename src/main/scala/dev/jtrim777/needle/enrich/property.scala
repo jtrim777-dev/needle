@@ -15,28 +15,30 @@ object propertyO {
 
     val inputs = annottees.map(_.tree).toList
 
-    val (param: ValDef, clazz: ClassDef, other) = inputs match {
-      case (p: ValDef) :: (c : ClassDef) :: rest => (p, c, rest)
-      case _ => c.abort(c.enclosingPosition, "The @property macro may only be used on class fields")
+    val valDef = inputs.head match {
+      case field: ValDef => field
+      case _ => c.abort(c.enclosingPosition, "The @property macro may only be used on value definitions")
     }
 
-    clazz match {
-      case q"$mods class $tpname[..$tparams] $ctorMods(...$paramss) extends { ..$earlydefns } with ..$parents { $self => ..$stats }" =>
-        println(mods)
-        println(tpname)
-        println(tparams)
-        println(ctorMods)
-        println(paramss)
-        println(earlydefns)
-        println(parents)
-        println(self)
-        println(stats)
-      case other => println("FUCK: "+other)
+    if (valDef.mods.hasFlag(Flag.PARAM)) {
+      c.abort(c.enclosingPosition, "The @property macro may only be used on value definitions")
     }
 
+    if (valDef.tpt.isEmpty) {
+      c.abort(c.enclosingPosition, "Values must explicitly define a type to be used as properties")
+    }
 
+    val varName = valDef.name.decodedName.toString
+    val nameAsTree = Literal(Constant(varName))
 
-    c.Expr[Any](clazz)
+    val rhs = valDef.rhs
+
+    val trueDef =
+      q"""
+        ${valDef.mods} val ${valDef.name} = { (eis:dev.jtrim777.needle.enrich.EnrichedItemStack) => eis.load[${valDef.tpt}]($nameAsTree) }
+        this.registerEnrichment($nameAsTree, { _ => $rhs })"""
+
+    c.Expr[Any](trueDef)
   }
 
 
