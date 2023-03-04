@@ -1,19 +1,19 @@
 package dev.jtrim777.needle.nbt
 
 import net.minecraft.nbt.{NbtCompound, NbtElement}
-import shapeless.{::, HList, HNil, LabelledGeneric, Lazy, Witness, Coproduct, CNil, :+:, Inl, Inr}
+import shapeless.{::, HList, HNil, LabelledGeneric, Lazy, Witness}
 import shapeless.labelled.{FieldType, field}
 
 object generic {
   implicit val hnilCodec: NBTCodec[HNil] = codec(
-    { _ => mapCodec[String].encode(Map.empty) },
+    { _ => new NbtCompound() },
     { _ => HNil }
   )
 
-  implicit val cnilCodec: NBTCodec[CNil] = codec(
-    { _ => throw new Exception("Impossible state reached") },
-    { _ => throw new Exception("Impossible state reached") }
-  )
+//  implicit val cnilCodec: NBTCodec[CNil] = codec(
+//    { _ => throw new Exception("Impossible state reached") },
+//    { _ => throw new Exception("Impossible state reached") }
+//  )
 
   implicit def hlistEncoder[K <: Symbol, H, T <: HList](implicit
                                                         witness: Witness.Aux[K],
@@ -26,6 +26,7 @@ object generic {
       val head = hEncoder.value.encode(input.head)
       val tail = tEncoder.encode(input.tail)
       tail.downCast(NbtCompound.TYPE).put(fieldName, head)
+      tail
     }
   }
 
@@ -74,18 +75,18 @@ object generic {
     }
   }
 
-  implicit def coproductEncoder[K <: Symbol, H, T <: Coproduct](implicit
-                                                               witness: Witness.Aux[K],
-                                                                hEncoder: Lazy[NBTEncoder[H]],
-                                                                tEncoder: NBTEncoder[T]
-                                                               ): NBTEncoder[FieldType[K, H] :+: T] = {
-    val typeName = witness.value.name
-
-    {
-      case Inl(head) => new NbtCompound().put(typeName, hEncoder.value.encode(head))
-      case Inr(tail) => tEncoder.encode(tail)
-    }
-  }
+//  implicit def coproductEncoder[K <: Symbol, H, T <: Coproduct](implicit
+//                                                               witness: Witness.Aux[K],
+//                                                                hEncoder: Lazy[NBTEncoder[H]],
+//                                                                tEncoder: NBTEncoder[T]
+//                                                               ): NBTEncoder[FieldType[K, H] :+: T] = {
+//    val typeName = witness.value.name
+//
+//    {
+//      case Inl(head) => new NbtCompound().put(typeName, hEncoder.value.encode(head))
+//      case Inr(tail) => tEncoder.encode(tail)
+//    }
+//  }
 
 //  implicit def coproductDecoder[K <: Symbol, H, T <: Coproduct](implicit
 //                                                                witness: Witness.Aux[K],
