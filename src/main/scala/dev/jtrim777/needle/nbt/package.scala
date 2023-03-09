@@ -1,5 +1,6 @@
 package dev.jtrim777.needle
 
+import net.minecraft.item.ItemStack
 import net.minecraft.nbt._
 
 import scala.jdk.CollectionConverters._
@@ -78,4 +79,7 @@ package object nbt {
     import generic._
     codec({a => EitherWrapper.wrap(a).asNBT }, {e => e.as[EitherWrapper[L, R]].unwrap })
   }
+
+  implicit val ISCodec: NBTCodec[ItemStack] = codec(is => is.writeNbt(new NbtCompound),
+    e => ItemStack.fromNbt(e.downCast(NbtCompound.TYPE)))
 }

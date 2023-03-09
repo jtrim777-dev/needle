@@ -4,6 +4,8 @@ import net.minecraft.nbt.NbtElement
 
 trait NBTDecoder[A] {
   def decode(source: NbtElement): A
+
+  def map[B](f: A => B): NBTDecoder[B] = { e => f(this.decode(e)) }
 }
 
 object NBTDecoder {
