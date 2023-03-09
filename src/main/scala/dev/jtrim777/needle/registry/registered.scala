@@ -15,25 +15,8 @@ object registeredO {
 
     val inputs = annottees.map(_.tree).toList
 
-    val valDef = inputs.head match {
-      case field: ValDef => field
-      case _ => c.abort(c.enclosingPosition, "The @registered macro may only be used on lazy value definitions")
-    }
+    c.abort(c.enclosingPosition, "The @registered macro may only be used inside @registry-annotated objects")
 
-    if (!valDef.mods.hasFlag(Flag.LAZY) | valDef.mods.hasFlag(Flag.PARAM)) {
-      c.abort(c.enclosingPosition, "The @registered macro may only be used on lazy value definitions")
-    }
-
-    val varName = valDef.name.decodedName.toString
-    val snaked = varName.replaceAll("([a-zA-Z0-9])([A-Z])", "$1_$2").toLowerCase
-    val nameAsTree = Literal(Constant(snaked))
-
-    val rhs = valDef.rhs
-
-    val trueDef = q"""
-        lazy val ${valDef.name} = this.registry.get(new net.minecraft.util.Identifier(this.namespace, $nameAsTree))
-        this.addEntry($nameAsTree, $rhs)"""
-
-    c.Expr[Any](trueDef)
+    c.Expr[Any](inputs.head)
   }
 }
