@@ -14,7 +14,7 @@ object syntax {
 
   implicit class IdHelper(val sc: StringContext) extends AnyVal {
     def id(args: Any*)(implicit ctx: ModContext): Identifier = {
-      val full = sc.s(args)
+      val full = sc.s(args:_*)
 
       val (namespace, name) = if (full.contains(':')) {
         val pts = full.split(':')
@@ -31,7 +31,7 @@ object syntax {
     }
 
     def vanilla(args: Any*): Identifier = {
-      val full = sc.s(args)
+      val full = sc.s(args:_*)
 
       new Identifier("minecraft", full)
     }
