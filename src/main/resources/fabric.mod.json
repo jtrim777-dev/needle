@@ -14,7 +14,10 @@
   },
   "license": "CC0-1.0",
   "environment": "*",
-  "mixins": [],
+  "mixins": [
+    "needle.mixins.json"
+  ],
+  "accessWidener": "metro.accesswidener",
   "depends": {
     "fabricloader": ">=0.14.9",
     "fabric-language-scala": "*"
