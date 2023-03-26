@@ -32,7 +32,6 @@ jobs:
       # So if we split on '/' and take the 3rd value, we can get the release name.
       - name: Set new version var
         run: |
-#          SHORT_SHA="$(git rev-parse --short HEAD)"
           CUR_VER="$(grep -oP '^\s*mod_version=\s*\K\S+' gradle.properties)"
           echo "NEW_VERSION=$CUR_VER-SNAPSHOT" >> $GITHUB_ENV
 
