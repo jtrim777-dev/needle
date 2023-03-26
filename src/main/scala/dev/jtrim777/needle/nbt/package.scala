@@ -2,6 +2,7 @@ package dev.jtrim777.needle
 
 import net.minecraft.item.ItemStack
 import net.minecraft.nbt._
+import net.minecraft.util.Identifier
 
 import scala.jdk.CollectionConverters._
 
@@ -79,6 +80,11 @@ package object nbt {
     import generic._
     codec({a => EitherWrapper.wrap(a).asNBT }, {e => e.as[EitherWrapper[L, R]].unwrap })
   }
+
+  implicit val IdentCodec: NBTCodec[Identifier] = NBTCodec.from(
+    StringCodec.contramap(_.toString),
+    StringCodec.map(new Identifier(_))
+  )
 
   implicit val ISCodec: NBTCodec[ItemStack] = codec(is => is.writeNbt(new NbtCompound),
     e => ItemStack.fromNbt(e.downCast(NbtCompound.TYPE)))

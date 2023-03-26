@@ -1,0 +1,58 @@
+name: Publish release
+
+on:
+  release:
+    types: [published]
+
+jobs:
+  publish-release:
+    runs-on: ubuntu-latest
+    environment: deployment
+
+    steps:
+      - name: Checkout latest code
+        uses: actions/checkout@v2
+
+      - name: Set up JDK 17
+        uses: actions/setup-java@v2
+        with:
+          distribution: 'adopt'
+          java-version: 17
+
+      - name: Setup build cache
+        uses: actions/cache@v2.1.6
+        with:
+          path: ~/.gradle/caches
+          key: ${{ runner.os }}-gradle-${{ hashFiles('**/*.gradle.kts') }}
+          restore-keys: |
+            ${{ runner.os }}-gradle-
+
+      # The GITHUB_REF tag comes in the format 'refs/tags/xxx'.
+      # So if we split on '/' and take the 3rd value, we can get the release name.
+      - name: Set new version var
+        run: echo "NEW_VERSION=$(echo $GITHUB_REF | cut -d "/" -f3 | sed -E 's|v||g')" >> $GITHUB_ENV
+
+      - name: Update versioning
+        run: |
+          echo "Setting version references to $NEW_VERSION"
+          sed -E -e 's|mod_version=.+|mod_version='$NEW_VERSION'|g' -i gradle.properties
+
+      - name: Commit version update
+        uses: EndBug/add-and-commit@v7
+        with:
+          author_name: GitHub Actions
+          author_email: Jtrim777
+          message: 'Update versioning info'
+          branch: main
+          pull: 'NO-PULL'
+          push: true
+          tag: 'v${{ env.NEW_VERSION }} --force'
+
+      - name: Publish artifact
+        env:
+          BAZELDIST_USERNAME: ${{ secrets.REPO_USER }}
+          BAZELDIST_PASSWORD: ${{ secrets.REPO_PASS }}
+          TARGET_REPO: ${{ vars.TARGET_REPO }}
+        run: |
+          echo "New version: ${NEW_VERSION}"
+          ./gradlew -Pversion=${NEW_VERSION} publish

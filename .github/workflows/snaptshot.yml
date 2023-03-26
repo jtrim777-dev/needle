@@ -1,0 +1,50 @@
+name: Publish snapshot
+
+on:
+  push:
+    branches:
+      - 'dev'
+
+jobs:
+  publish-release:
+    runs-on: ubuntu-latest
+    environment: snapshot
+
+    steps:
+      - name: Checkout latest code
+        uses: actions/checkout@v2
+
+      - name: Set up JDK 17
+        uses: actions/setup-java@v2
+        with:
+          distribution: 'adopt'
+          java-version: 17
+
+      - name: Setup build cache
+        uses: actions/cache@v2.1.6
+        with:
+          path: ~/.gradle/caches
+          key: ${{ runner.os }}-gradle-${{ hashFiles('**/*.gradle.kts') }}
+          restore-keys: |
+            ${{ runner.os }}-gradle-
+
+      # The GITHUB_REF tag comes in the format 'refs/tags/xxx'.
+      # So if we split on '/' and take the 3rd value, we can get the release name.
+      - name: Set new version var
+        run: |
+          CUR_VER="$(grep -oP '^\s*mod_version=\s*\K\S+' gradle.properties)"
+          echo "NEW_VERSION=$CUR_VER-SNAPSHOT" >> $GITHUB_ENV
+
+      - name: Update versioning
+        run: |
+          echo "Setting version references to $NEW_VERSION"
+          sed -E -e 's|mod_version=.+|mod_version='$NEW_VERSION'|g' -i gradle.properties
+
+      - name: Publish artifact
+        env:
+          BAZELDIST_USERNAME: ${{ secrets.REPO_USER }}
+          BAZELDIST_PASSWORD: ${{ secrets.REPO_PASS }}
+          TARGET_REPO: ${{ vars.TARGET_REPO }}
+        run: |
+          echo "New version: ${NEW_VERSION}"
+          ./gradlew -Pversion=${NEW_VERSION} publish

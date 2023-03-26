@@ -77,7 +77,7 @@ publishing {
 	repositories {
 		maven {
 			name = "Jtrim777"
-			url = "https://maven.jtrim777.dev/releases/"
+			url = "https://maven.jtrim777.dev/${System.getenv("TARGET_REPO")}/"
 			credentials {
 				username = "${System.getenv("BAZELDIST_USERNAME")}"
 				password = "${System.getenv("BAZELDIST_PASSWORD")}"
