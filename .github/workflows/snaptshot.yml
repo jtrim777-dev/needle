@@ -1,13 +1,14 @@
-name: Publish release
+name: Publish snapshot
 
 on:
-  release:
-    types: [published]
+  push:
+    branches:
+      - 'dev'
 
 jobs:
   publish-release:
     runs-on: ubuntu-latest
-    environment: deployment
+    environment: snapshot
 
     steps:
       - name: Checkout latest code
@@ -30,23 +31,15 @@ jobs:
       # The GITHUB_REF tag comes in the format 'refs/tags/xxx'.
       # So if we split on '/' and take the 3rd value, we can get the release name.
       - name: Set new version var
-        run: echo "NEW_VERSION=$(echo $GITHUB_REF | cut -d "/" -f3 | sed -E 's|v||g')" >> $GITHUB_ENV
+        run:
+          - SHORT_SHA="$(git rev-parse --short HEAD)"
+          - CUR_VER="$(grep -oP '^\s*mod_version=\s*\K\S+' gradle.properties)"
+          - echo "NEW_VERSION=$CUR_VER-$SHORT_SHA" >> $GITHUB_ENV
 
       - name: Update versioning
         run: |
           echo "Setting version references to $NEW_VERSION"
           sed -E -e 's|mod_version=.+|mod_version='$NEW_VERSION'|g' -i build.properties
-
-      - name: Commit version update
-        uses: EndBug/add-and-commit@v7
-        with:
-          author_name: GitHub Actions
-          author_email: Jtrim777
-          message: 'Update versioning info'
-          branch: main
-          pull: 'NO-PULL'
-          push: true
-          tag: 'v${{ env.NEW_VERSION }} --force'
 
       - name: Publish artifact
         env:
