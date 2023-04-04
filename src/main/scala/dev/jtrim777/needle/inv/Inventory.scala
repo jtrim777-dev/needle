@@ -1,6 +1,6 @@
 package dev.jtrim777.needle.inv
 
-import dev.jtrim777.needle.nbt.{NBTDecoder, NBTEncoder, iterableCodec}
+import dev.jtrim777.needle.nbt.{NBTDecoder, NBTEncoder, seqCodec}
 import net.minecraft.entity.player.PlayerEntity
 import net.minecraft.inventory.{Inventory => MInventory}
 import net.minecraft.item.{Item, ItemStack}
@@ -147,6 +147,6 @@ object Inventory {
   }
   def from(minecraft: MInventory): Inventory = Wrapper(minecraft)
 
-  implicit val InvEncoder: NBTEncoder[Inventory] = iterableCodec[ItemStack].contramap(_.toSeq)
-  implicit val BasicDecoder: NBTDecoder[Inventory.Basic] = iterableCodec[ItemStack].map(is => Basic(is.toIndexedSeq))
+  implicit val InvEncoder: NBTEncoder[Inventory] = seqCodec[ItemStack].contramap(_.toSeq)
+  implicit val BasicDecoder: NBTDecoder[Inventory.Basic] = seqCodec[ItemStack].map(is => Basic(is.toIndexedSeq))
 }
