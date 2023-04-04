@@ -39,7 +39,7 @@ package object nbt {
   implicit val BArrayEncoder: NBTCodec[Iterable[Byte]] = codec({bs =>new NbtByteArray(bs.toArray)},
     {e => e.downCast(NbtByteArray.TYPE).getByteArray})
 
-  implicit def iterableCodec[A : NBTEncoder : NBTDecoder]: NBTCodec[Iterable[A]] = codec(
+  implicit def seqCodec[A : NBTEncoder : NBTDecoder]: NBTCodec[Seq[A]] = codec(
     { is =>
       val nbtList = new NbtList()
       is.foreach(a => nbtList.add(implicitly[NBTEncoder[A]].encode(a)))
@@ -60,6 +60,18 @@ package object nbt {
     { e =>
       val nmap = e.downCast(NbtCompound.TYPE)
       nmap.getKeys.asScala.toList.map(s => s -> nmap.get(s).as[V]).toMap
+    }
+  )
+
+  implicit def identMapCodec[V: NBTEncoder : NBTDecoder]: NBTCodec[Map[Identifier, V]] = codec(
+    { map =>
+      val cmpd = new NbtCompound()
+      map.foreach(t => cmpd.put(t._1.toString, implicitly[NBTEncoder[V]].encode(t._2)))
+      cmpd
+    },
+    { e =>
+      val nmap = e.downCast(NbtCompound.TYPE)
+      nmap.getKeys.asScala.toList.map(s => new Identifier(s) -> nmap.get(s).as[V]).toMap
     }
   )
 
