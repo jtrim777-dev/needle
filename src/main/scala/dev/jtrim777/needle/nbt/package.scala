@@ -5,6 +5,7 @@ import net.minecraft.nbt._
 import net.minecraft.util.Identifier
 
 import scala.jdk.CollectionConverters._
+import scala.util.Try
 
 
 package object nbt {
@@ -21,12 +22,25 @@ package object nbt {
     }
 
     def as[A : NBTDecoder]: A = implicitly[NBTDecoder[A]].decode(element)
+
+    def asOpt[A : NBTDecoder]: Option[A] = Try(implicitly[NBTDecoder[A]].decode(element)).toOption
+
+    def contains[A : NBTDecoder](value: A): Boolean = asOpt[A].contains(value)
+
+    /**
+     * Uses a fuzzy match to determine if two NbtElement's are similar. For non-structured data,
+     * equivalence is required. For lists, all elements in the pattern must be contained in the
+     * target. For objects, all keys in the pattern must exist in the target and their values
+     * must match
+     */
+    def matches(pattern: NbtElement): Boolean = NBTPredicate.matches(pattern, element)
   }
 
   implicit class EncodableOps[A : NBTEncoder](a: A) {
     def asNBT: NbtElement = implicitly[NBTEncoder[A]].encode(a)
   }
 
+  implicit val NoopCodec: NBTCodec[NbtElement] = codec({a => a}, {b => b})
   implicit val ByteCodec: NBTCodec[Byte] = codec({i => NbtByte.of(i)}, { e => e.downCast(NbtByte.TYPE).byteValue()})
   implicit val ShortCodec: NBTCodec[Short] = codec({i => NbtShort.of(i)}, { e => e.downCast(NbtShort.TYPE).shortValue()})
   implicit val IntCodec: NBTCodec[Int] = codec({i => NbtInt.of(i)}, {e => e.downCast(NbtInt.TYPE).intValue()})
