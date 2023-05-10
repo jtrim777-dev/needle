@@ -3,7 +3,7 @@
 
 <p>
 <a href="https://opensource.org/licenses/MIT"><img src="https://img.shields.io/badge/License-MIT-brightgreen.svg"></a>
-<a href="https://maven.jtrim777.dev/#/releases/dev/jtrim777/needle/0.1.4"><img src="https://maven.jtrim777.dev/api/badge/latest/releases/dev/jtrim777/needle?color=7011ff&name=Maven&prefix=v"></a>
+<a href="https://maven.jtrim777.dev/#/releases/dev/jtrim777/needle/"><img src="https://maven.jtrim777.dev/api/badge/latest/releases/dev/jtrim777/needle?color=7011ff&name=Maven&prefix=v"></a>
 </p>
 
 
