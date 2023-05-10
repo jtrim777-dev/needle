@@ -1,4 +1,4 @@
-# Needle \[DEV BRANCH\]
+# Needle
 *Minecraft Version 1.19.4*
 
 <p>
