@@ -5,6 +5,7 @@ import net.minecraft.util.registry.Registry
 import org.apache.logging.log4j.{LogManager, Logger}
 
 import scala.reflect.ClassTag
+import scala.util.{Failure, Success, Try}
 
 abstract class DelayedRegistry[T : ClassTag] {
   def registry: Registry[T]
@@ -42,8 +43,16 @@ abstract class DelayedRegistry[T : ClassTag] {
 
     if (registry.containsId(ident)) {
       registry.get(ident)
-    } else {
-      throw new NoSuchElementException(s"No such $entryClassName '$namespace:$id' in registry ${registry.getKey.toString}")
+    } /*else if (entries.contains(id)) {
+      Try(entries(id)()) match {
+        case Failure(exception) =>
+          log.warn(s"Tried to access $entryClassName '$namespace:$id' before it could be initialized; Initialization failed w/ $exception")
+          throw new NoSuchElementException(s"No such $entryClassName '$namespace:$id' in registry ${registry.getKey.toString} (entry has not yet been registered)")
+        case Success(value) => value
+      }
+    }*/ else {
+      val extraMessage = if (entries.contains(id)) " (entry has not yet been registered)" else ""
+      throw new NoSuchElementException(s"No such $entryClassName '$namespace:$id' in registry ${registry.getKey.toString}$extraMessage")
     }
   }
 
