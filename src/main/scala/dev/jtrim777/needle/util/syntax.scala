@@ -12,6 +12,10 @@ object syntax {
     def range(dx: Int, dy: Int, dz: Int): PosArea = PosArea.Cubic(bp, dx, dy, dz)
   }
 
+  implicit class TupIOps(val tup: (Int, Int, Int)) {
+    def toBlockPos: BlockPos = new BlockPos(tup._1, tup._2, tup._3)
+  }
+
   implicit class IdHelper(val sc: StringContext) extends AnyVal {
     def id(args: Any*)(implicit ctx: ModContext): Identifier = {
       val full = sc.s(args:_*)
