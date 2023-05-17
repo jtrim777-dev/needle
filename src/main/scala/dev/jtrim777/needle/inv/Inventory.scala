@@ -134,19 +134,19 @@ object Inventory {
     def apply(size: Int): Basic = new Basic(IndexedSeq.fill(size)(ItemStack.EMPTY))
   }
 
-  class Wrapper(val inventory: MInventory) extends Inventory {
+  trait Wrapper extends Inventory {
+    val inventory: MInventory
+
     override def size: Int = inventory.size
-
     override def isEmpty: Boolean = inventory.isEmpty
-
     override def getStack(slot: Int): ItemStack = inventory.getStack(slot)
-
     override def setStack(slot: Int, stack: ItemStack): Unit = inventory.setStack(slot, stack)
-
     override def duplicate(): Inventory = Basic(IndexedSeq.from((0 until inventory.size).map(i => inventory.getStack(i).copy())))
   }
 
-  def wrapping(minecraft: MInventory): Inventory = new Wrapper(minecraft)
+  def wrapping(minecraft: MInventory): Inventory = new Wrapper {
+    override val inventory: MInventory = minecraft
+  }
 
   implicit val InvEncoder: NBTEncoder[Inventory] = seqCodec[ItemStack].contramap(_.toSeq)
   implicit val BasicDecoder: NBTDecoder[Inventory.Basic] = seqCodec[ItemStack].map(is => Basic(is.toIndexedSeq))
