@@ -31,7 +31,7 @@ class MultiblockPattern(val pattern: List[Entry], val symmetrical: Boolean,
   }
 
   private def checkOne(entry: Entry, origin: BlockPos, world: World, rot: BlockRotation): Boolean = {
-    val testPos = entry.pos.rotate(rot).add(origin)
+    val testPos = entry.pos.rotate(rot).add(origin):BlockPos
 
     entry.rule(world.getBlockState(testPos), rot)
   }

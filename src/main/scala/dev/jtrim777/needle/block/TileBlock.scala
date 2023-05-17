@@ -9,7 +9,7 @@ import net.minecraft.world.World
 
 import scala.reflect.ClassTag
 
-abstract class TileBlock[X <: TileBlock[X, T] : ClassTag, T <: BaseTile[T]](props: Settings)
+abstract class TileBlock[X <: TileBlock[X, T, TD] : ClassTag, T <: BaseTile[T, TD], TD](props: Settings)
   extends BaseBlock[X](props) with BlockEntityProvider { this: X =>
 
   def getTileType: BlockEntityType[T]
